@@ -1,0 +1,34 @@
+type Author {
+        domain: String! @id
+        name: String! @search(by: [hash, trigram])
+        dob: DateTime @search
+        blogs: [Blog!] @hasInverse(field: author)
+        passport: Passport! @hasInverse(field: author)
+}
+
+type Passport @secret(field: "password") {
+    email: String! @id
+    wxid: String @search(by: [hash])
+    githubid: String @search(by: [hash])
+    author: Author! @hasInverse(field: passport)
+}
+
+type Blog @auth(
+    add: { rule: """
+        query ($domain: String!) {
+            queryBlog {
+                author( filter : { domain: { eq: $domain } } ) {
+                    domain
+                }
+            }
+        }"""
+    }
+){
+        glogID: ID!
+        title: String! @search(by: [term, fulltext])
+        text: String @search(by: [fulltext])
+        tags: [String] @search(by: [exact])
+        topic: String @search(by: [exact])
+        isPublished: Boolean @search
+        author: Author! @hasInverse(field: blogs)
+}
