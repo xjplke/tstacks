@@ -33,6 +33,28 @@ func RandString(length int) string {
 	return strings.Join(rs, "")
 }
 
+//因为 dgraph是反向代理调用的， 会导致httptest.ResponseRecorder报错，封装一下,参考
+//https://stackoverflow.com/questions/33968840/how-to-test-reverse-proxy-with-martini-in-go
+type closeNotifyingRecorder struct {
+	*httptest.ResponseRecorder
+	closed chan bool
+}
+
+func newCloseNotifyingRecorder() *closeNotifyingRecorder {
+	return &closeNotifyingRecorder{
+		httptest.NewRecorder(),
+		make(chan bool, 1),
+	}
+}
+
+func (c *closeNotifyingRecorder) close() {
+	c.closed <- true
+}
+
+func (c *closeNotifyingRecorder) CloseNotify() <-chan bool {
+	return c.closed
+}
+
 func TestRegisterAndLogin(t *testing.T) {
 	auth := api.Auth{
 		Username: RandString(5),
@@ -113,12 +135,26 @@ func TestRegisterAndLogin(t *testing.T) {
 		})
 
 		Convey("Test Add Blog", func() {
-			req := httptest.NewRequest("GET", "/ping", nil)
+			q := `mutation {
+	addBlog(input: [{ title: "abcde", text: "123456", author: { domain: "` + "1111" + `" } }]) {
+		blog {
+			blogID
+		}
+	}
+}`
+			body := bytes.NewReader([]byte(q))
+			req := httptest.NewRequest("POST", "/graphql", body)
 			req.Header["Authorization"] = []string{"bearer " + tokenS}
-			w := httptest.NewRecorder()
+			req.Header["Content-Type"] = []string{"application/graphql"}
+			//w := httptest.NewRecorder()
+			w := newCloseNotifyingRecorder() //反向代理特有的调用方式
 			router.ServeHTTP(w, req)
 			result := w.Result()
 			defer result.Body.Close()
+
+			rspBody, err := ioutil.ReadAll(result.Body)
+			So(err, ShouldEqual, nil)
+			fmt.Println("rspBody = " + string(rspBody))
 		})
 	})
 }

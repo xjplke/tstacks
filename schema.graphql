@@ -24,7 +24,7 @@ type Blog @auth(
         }"""
     }
 ){
-        glogID: ID!
+        blogID: ID!
         title: String! @search(by: [term, fulltext])
         text: String @search(by: [fulltext])
         tags: [String] @search(by: [exact])

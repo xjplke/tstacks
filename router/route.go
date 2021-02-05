@@ -11,7 +11,7 @@ func InitRouter() *gin.Engine {
 
 	r.POST("register", api.UserRegister)
 	r.POST("login", api.DoAuth)
-	r.POST("/_dgraph", api.DgraphProxy)
+	r.POST("graphql", api.ReverseProxy("http://localhost:8080"))
 
 	apiv1 := r.Group("/ping").Use(middleware.JWT())
 	apiv1.GET("", func(c *gin.Context) {

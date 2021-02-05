@@ -1,8 +1,26 @@
 package api
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"log"
+	"net/http/httputil"
+	"net/url"
+)
 
-//要不要做权限验证？ 权限验证实际是在dgraph后端，但是权限相关的错误码要在这里做映射。
-func DgraphProxy(c *gin.Context) {
+func ReverseProxy(target string) gin.HandlerFunc {
+	url, err := url.Parse(target)
+	if err != nil {
+		log.Println("Reverse Proxy target url could not be parsed:", err)
+		return nil
+	}
+	proxy := httputil.NewSingleHostReverseProxy(url)
+	return func(c *gin.Context) {
+		proxy.ServeHTTP(c.Writer, c.Request)
+	}
+}
+
+func ProxyHandler(c *gin.Context) {
+
+	c.Header()
 
 }
