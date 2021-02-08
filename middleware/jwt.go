@@ -4,7 +4,6 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"strings"
 	e "techstacks.cn/techstacks/error"
 	"techstacks.cn/techstacks/utils"
 )
@@ -16,18 +15,11 @@ func JWT() gin.HandlerFunc {
 		var data interface{}
 
 		code = e.SUCCESS
-		token := ""
+		//token := ""
 		// https://jwt.io/introduction/
-		bearer := c.GetHeader("Authorization")
-		if bearer == "" {
+		token := c.GetHeader("X-Auth-Token")
+		if token == "" {
 			code = e.ERROR_NOT_AUTH
-		} else {
-			tokens := strings.Split(bearer, " ")
-			if len(tokens) != 2 {
-				code = e.INVALID_PARAMS
-			} else {
-				token = tokens[1]
-			}
 		}
 
 		if token == "" {

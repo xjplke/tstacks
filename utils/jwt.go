@@ -7,9 +7,13 @@ import (
 
 var jwtSecret []byte
 
-type Claims struct {
+type Namespace struct {
 	Domain   string `json:"domain"`
 	Username string `json:"username"`
+}
+
+type Claims struct {
+	Namespace Namespace `json:"https://www.teckstacks.cn/jwt/claims"`
 	// Password string `json:"password"`
 	jwt.StandardClaims
 }
@@ -19,9 +23,13 @@ func GenerateToken(username, domain string) (string, error) {
 	nowTime := time.Now()
 	expireTime := nowTime.Add(3 * time.Hour)
 
+	jwtSecret = []byte("123456")
+
 	claims := Claims{
-		EncodeMD5(domain),
-		EncodeMD5(username),
+		Namespace{
+			domain,
+			username,
+		},
 		//EncodeMD5(password),
 		jwt.StandardClaims{
 			ExpiresAt: expireTime.Unix(),

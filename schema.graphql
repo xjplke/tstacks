@@ -2,7 +2,7 @@ type Author {
         domain: String! @id
         name: String! @search(by: [hash, trigram])
         dob: DateTime @search
-        blogs: [Blog!] @hasInverse(field: author)
+        blogs: [Blog]
         passport: Passport! @hasInverse(field: author)
 }
 
@@ -27,8 +27,10 @@ type Blog @auth(
         blogID: ID!
         title: String! @search(by: [term, fulltext])
         text: String @search(by: [fulltext])
-        tags: [String] @search(by: [exact])
+        tags: [String!] @search(by: [exact])
         topic: String @search(by: [exact])
         isPublished: Boolean @search
-        author: Author! @hasInverse(field: blogs)
+        author: Author!
 }
+
+# Dgraph.Authorization {"VerificationKey":"123456","Header":"X-Auth-Token","Namespace":"https://www.teckstacks.cn/jwt/claims","Algo":"HS256"}

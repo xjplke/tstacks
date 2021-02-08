@@ -91,7 +91,7 @@ type Error struct {
 	Ctx     interface{} `json:"context"'`
 }
 
-func (e *Error) Error() string {
+func (e Error) Error() string {
 	b, err := json.Marshal(e)
 	if err != nil {
 		return "format error failed"

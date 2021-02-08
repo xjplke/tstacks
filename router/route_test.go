@@ -119,7 +119,7 @@ func TestRegisterAndLogin(t *testing.T) {
 
 		Convey("Test Auth Api", func() {
 			req := httptest.NewRequest("GET", "/ping", nil)
-			req.Header["Authorization"] = []string{"bearer " + tokenS}
+			req.Header["X-Auth-Token"] = []string{tokenS}
 			w := httptest.NewRecorder()
 			router.ServeHTTP(w, req)
 			result := w.Result()
@@ -136,7 +136,7 @@ func TestRegisterAndLogin(t *testing.T) {
 
 		Convey("Test Add Blog", func() {
 			q := `mutation {
-	addBlog(input: [{ title: "abcde", text: "123456", author: { domain: "` + "1111" + `" } }]) {
+	addBlog(input: [{ title: "abcde", text: "123456", author: { domain: "` + register.Domain + `" } }]) {
 		blog {
 			blogID
 		}
@@ -144,10 +144,10 @@ func TestRegisterAndLogin(t *testing.T) {
 }`
 			body := bytes.NewReader([]byte(q))
 			req := httptest.NewRequest("POST", "/graphql", body)
-			req.Header["Authorization"] = []string{"bearer " + tokenS}
+			req.Header["X-Auth-Token"] = []string{tokenS}
 			req.Header["Content-Type"] = []string{"application/graphql"}
-			//w := httptest.NewRecorder()
-			w := newCloseNotifyingRecorder() //反向代理特有的调用方式
+			w := httptest.NewRecorder()
+			//w := newCloseNotifyingRecorder() //反向代理特有的调用方式
 			router.ServeHTTP(w, req)
 			result := w.Result()
 			defer result.Body.Close()

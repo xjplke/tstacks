@@ -36,11 +36,26 @@ func (c *Client) DoRequire(q string, param interface{}) (*http.Response, error) 
 	if err != nil {
 		return nil, err
 	}
-	body := bytes.NewBuffer([]byte(qJson))
-
-	rsp, err := c.httpClient.Post(c.hosts[0], "application/json", body)
 	log.Println("DoRequire body = ", string(qJson))
+
+	body := bytes.NewBuffer([]byte(qJson))
+	rsp, err := c.httpClient.Post(c.hosts[0], "application/json", body)
+
 	return rsp, err
+}
+
+func (c *Client) DoProxy(req *http.Request) (*http.Response, error) {
+	newReq, err := http.NewRequest(req.Method, client.hosts[0], req.Body)
+	if err != nil {
+		log.Println("NewRequest error:", err)
+		return nil, err
+	}
+	newReq.Header = req.Header
+	return c.httpClient.Do(newReq)
+}
+
+func DoProxy(req *http.Request) (*http.Response, error) {
+	return client.DoProxy(req)
 }
 
 func DoRequire(q string, param interface{}) (*http.Response, error) {
